@@ -1,0 +1,123 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Warehouse {
+  warehouse_id        String @id @default(uuid())
+  code      String
+  name      String
+  address   String
+
+  zone        Zone[]
+  location    Location[]
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt 
+}
+
+model Zone {
+
+ zone_id        String @id @default(uuid())
+  code      String
+  name      String
+
+  warehouse_id  String
+  warehouse     Warehouse @relation(fields: [warehouse_id], references: [warehouse_id], onDelete: Cascade )
+
+  location    Location[]
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt 
+
+}
+
+model Location {
+
+ location_id        String @id @default(uuid())
+  code              String
+  barcode_location          String
+  name              String
+  address           String
+
+  warehouse_id  String
+  warehouse     Warehouse @relation(fields: [warehouse_id], references: [warehouse_id], onDelete: Cascade )
+
+  zone_id  String
+  zone     Zone @relation(fields: [zone_id], references: [zone_id])
+
+  movings Moving[]
+  products Product[]
+
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt 
+
+}
+
+model Product {
+  id                    String   @id @default(uuid())
+  name                  String
+  description           String?
+  kode_sku              String
+  barcode_product       String?
+  // stock              Int      @default(0) // stock quantity
+  coverUrl              String?
+  galleryUrl            String[]
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  stock                 Stock[]
+  moving                Moving[]
+
+  location_id           String?
+  location              Location? @relation(fields: [location_id], references: [location_id])
+}
+
+model Stock {
+  stock_id          String    @id @default(uuid())
+  name        String
+
+  product_id  String
+  product Product @relation(fields: [product_id], references: [id])
+
+   createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Moving {
+  moving_id          String    @id @default(uuid())
+  name        String
+  quantity      Int
+
+  product_id  String
+  product Product @relation(fields: [product_id], references: [id])
+
+  location_id String
+  location Location @relation(fields: [location_id], references: [location_id])
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+}
+
+
+enum PhotoType {
+  COVER
+  GALLERY
+}
+model Photo {
+  id            String @id @default(uuid())
+  url           String
+  key           String @unique
+  refId         String
+  fileName      String
+  originalName  String
+  size          Int
+  type          PhotoType
+  createdAt     DateTime @default(now())
+}
